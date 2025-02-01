@@ -25,11 +25,20 @@ class EmbeddingModel:
 
         return self.get_image_embeddings(images)
     
-    def get_image_embeddings(self, images: list):
-        """Function for generating embeddings for a list of images
+    def embed_images_from_list(self, images: list):
+        """Function for geenrating embeddings for a list of images
+
+        Args:
+            images (list): list of images
+        """
+        images = [self.model_preprocess(img).unsqueeze(0).to(self.device) for img in images]
+        return self.get_image_embeddings(torch.cat(images, dim=0))
+    
+    def get_image_embeddings(self, images):
+        """Function for generating embeddings for a tensor of images
 
         Returns:
-            images (list): List of images
+            images (list): Tensor of images
         """
     
         with torch.no_grad():
