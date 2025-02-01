@@ -13,7 +13,7 @@ class EmbeddingModel:
         self.device = "cuda" if torch.cuda.is_available() and force_cpu is not True else "cpu"
         self.model, self.model_preprocess = clip.load(model_type, device=self.device)
         
-    def embed_images(self, img_paths: list):
+    def embed_images_from_paths(self, img_paths: list):
         """Function for creating embeddings for img_paths
         Returns the type that self.model.encode_image returns
 
@@ -22,7 +22,16 @@ class EmbeddingModel:
         """
         images = [self.model_preprocess(Image.open(impath)).unsqueeze(0).to(self.device) for impath in img_paths]
         images = torch.cat(images, dim=0)
-        
+
+        return self.get_image_embeddings(images)
+    
+    def get_image_embeddings(self, images: list):
+        """Function for generating embeddings for a list of images
+
+        Returns:
+            images (list): List of images
+        """
+    
         with torch.no_grad():
             image_features = self.model.encode_image(images)
         
