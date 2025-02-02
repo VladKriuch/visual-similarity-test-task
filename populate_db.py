@@ -1,13 +1,15 @@
 """Script for populating db with initial dataset using elasticsearch as db"""
 
-from src.model import EmbeddingModel
+from src.model import EmbeddingModel, DetectionModel
 from src.elastic_db import ElasticDB
 
 import glob
 import os
+import json
 
 from dotenv import load_dotenv
 from tqdm import tqdm
+from PIL import Image
 
 def main():
     # Init model
@@ -19,6 +21,12 @@ def main():
     
     elastic_db = ElasticDB(elastic_api_key)
     elastic_db.create_index()
+    
+    # Load detection model
+    with open("static/CATEGORIZATION.json", "r") as f:
+        detection_model = DetectionModel(
+            json.load(f)
+        )
     
     # some static vars
     BATCH_SIZE = 8
@@ -35,8 +43,24 @@ def main():
         for j, filepath in enumerate(batch):
             elastic_db.insert_index(
                 filepath,
-                image_embeddings[j].cpu().tolist()
+                image_embeddings[j].cpu().tolist(),
+                "None",
+                "None"
             )
+        
+            categorized_bboxes = detection_model.find_points_of_interest(filepath)
+            image = Image.open(filepath)
+            for indx, label in enumerate(categorized_bboxes['labels']):
+                bbox = categorized_bboxes['boxes'][indx]
+                cropped_image = image.crop(bbox)
+                local_image_embeddings = model.embed_images_from_list([cropped_image])[0].cpu().tolist()
+                
+                elastic_db.insert_index(
+                    filepath,
+                    local_image_embeddings,
+                    label,
+                    str(bbox)
+                )
 
 if __name__ == "__main__":
     main()

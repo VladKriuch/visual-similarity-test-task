@@ -26,17 +26,23 @@ class ElasticDB:
                         "vector": {
                             "type": "dense_vector",
                             "dims": 512,
-                        "similarity": "cosine",
+                            "similarity": "cosine",
                         },
                         "filepath": {
                             "type": "keyword",
                         },
+                        "category": {
+                            "type": "keyword"
+                        },
+                        "bbox": {
+                            "type": "keyword"
+                        }
                     },
                 },
             }
         )
     
-    def insert_index(self, filepath: str, vector: list):
+    def insert_index(self, filepath: str, vector: list, category: str, bbox: str):
         """Inserts index
 
         Args:
@@ -48,6 +54,8 @@ class ElasticDB:
             body={
                 "vector": vector,
                 "filepath": filepath,
+                "category": category,
+                "bbox": bbox
             }
         )
     

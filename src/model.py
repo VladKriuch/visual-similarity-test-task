@@ -3,19 +3,25 @@ import clip
 from PIL import Image
 from ultralytics import YOLO
 from copy import deepcopy
+import numpy as np
+from src.utils import *
 
 class DetectionModel:
     def __init__(self, classification_dict={}, model_type="yolov8x-oiv7", force_cpu=False):
         self.device = "cuda" if torch.cuda.is_available() and force_cpu is not True else "cpu"
-        self.model = YOLO(model_type)
+        self.model = YOLO(model_type, verbose=False)
         self.classification_dict = classification_dict
     
     def find_points_of_interest(self, image):
         boxes = self.get_boxes(image)
-        return self.reclassify_results(boxes)
+        classified_boxes = self.reclassify_results(boxes)
+        
+        if len(classified_boxes['labels']) > 0:
+            return custom_non_max_suppression(classified_boxes['labels'], classified_boxes['boxes'], classified_boxes['conf'], distance_threshold=100)
+        return classified_boxes
         
     def get_boxes(self, image):
-        results = self.model(image, conf=0.1)
+        results = self.model(image, conf=0.1, iou=0.5)
         
         results_dict = {
             'labels': [],

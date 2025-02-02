@@ -60,6 +60,9 @@
         "Sofa bed"
     ],
     "Food": [
+        "Snacks",
+        "Box",
+        "Tin can",
         "Dessert",
         "Coffee cup",
         "Cabbage",
@@ -73,6 +76,7 @@
         "Broccoli",
         "Cake",
         "Carrot",
+        "Drink",
         "Cheese",
         "Chicken",
         "Chocolate",
@@ -112,7 +116,8 @@
         "Cantaloupe",
         "Fast food",
         "Fish",
-        "Food"
+        "Food",
+        "Muffin"
     ],
     "Instruments": [
         "Chainsaw",
@@ -128,7 +133,6 @@
         "Suitcase",
         "Miniskirt",
         "Belt",
-        "Boot",
         "Dress",
         "Glove",
         "Hat",
@@ -146,8 +150,6 @@
         "Brassiere",
         "Clothing",
         "Coat",
-        "Footwear",
-        "High heels",
         "Sports uniform",
         "Trousers"
     ],
@@ -156,7 +158,6 @@
         "Swimwear",
         "Hiking equipment",
         "Helmet",
-        "Box",
         "Bicycle helmet",
         "Bicycle",
         "Bicycle wheel",
@@ -245,5 +246,11 @@
         "Dairy Product",
         "Face powder",
         "Personal care"
+    ],
+    "Footwear": [
+        "Footwear",
+        "Boot",
+        "Footwear",
+        "High heels"
     ]
 }
