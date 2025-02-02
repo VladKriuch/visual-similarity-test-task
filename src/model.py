@@ -1,7 +1,57 @@
 import torch
 import clip
 from PIL import Image
+from ultralytics import YOLO
+from copy import deepcopy
 
+class DetectionModel:
+    def __init__(self, classification_dict={}, model_type="yolov8x-oiv7", force_cpu=False):
+        self.device = "cuda" if torch.cuda.is_available() and force_cpu is not True else "cpu"
+        self.model = YOLO(model_type)
+        self.classification_dict = classification_dict
+    
+    def find_points_of_interest(self, image):
+        boxes = self.get_boxes(image)
+        return self.reclassify_results(boxes)
+        
+    def get_boxes(self, image):
+        results = self.model(image, conf=0.1)
+        
+        results_dict = {
+            'labels': [],
+            'boxes': [],
+            'conf': []
+        }
+        for results in results:
+            for box in results.boxes:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
+                conf = box.conf[0].item()  # Confidence score
+                cls = int(box.cls[0].item())  # Class index
+                label = self.model.names[cls]
+                
+                results_dict['labels'].append(label)
+                results_dict['conf'].append(conf)
+                results_dict['boxes'].append((x1, y1, x2, y2))
+        
+        return results_dict
+    
+    def reclassify_results(self, results):
+        results = deepcopy(results)
+        updated_results = {
+            'labels': [],
+            'boxes': [],
+            'conf': []
+        }
+        
+        for indx, label in enumerate(results['labels']):
+            for class_name, class_values in self.classification_dict.items():
+                if label in class_values:
+                    updated_results['labels'].append(class_name)
+                    updated_results['boxes'].append(results['boxes'][indx])
+                    updated_results['conf'].append(results['conf'][indx])
+                    break
+        return updated_results
+        
 class EmbeddingModel:
     def __init__(self, model_type="ViT-B/32", force_cpu=False):
         """Class for generating embeddings for images/texts
