@@ -72,9 +72,23 @@ class ElasticDB:
         """
         _must = []
         if label is not None:
+            labels_mapper = {
+                "Musical instruments": ["Musical instruments"],
+                "Vehicles": ["Vehicles"],
+                "Furniture": ["Furniture"],
+                "Food": ["Food"],
+                "Instruments": ["Instruments", "Electronics"],
+                "Clothing": ["Clothing", "Accessories", "Sports"],
+                "Sports": ["Sports", "Clothing"],
+                "Accessories": ["Clothing", "Accessories"],
+                "Books": ["Books"],
+                "Electronics": ["Electronics", "Instruments"],
+                "Cosmetics": ["Cosmetics", "Food", "Accessories"],
+                "Footwear": ["Footwear"]
+            }
             _must.append({
-                "term": {
-                    "category": label
+                "terms": {
+                    "category": labels_mapper[label]
                 }
             })
         
