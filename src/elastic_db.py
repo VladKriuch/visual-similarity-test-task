@@ -36,13 +36,16 @@ class ElasticDB:
                         },
                         "bbox": {
                             "type": "keyword"
+                        },
+                        "is_single_product": {
+                            "type": "boolean"
                         }
                     },
                 },
             }
         )
     
-    def insert_index(self, filepath: str, vector: list, category: str, bbox: str):
+    def insert_index(self, filepath: str, vector: list, category: str, bbox: str, is_single_product: bool):
         """Inserts index
 
         Args:
@@ -55,27 +58,47 @@ class ElasticDB:
                 "vector": vector,
                 "filepath": filepath,
                 "category": category,
-                "bbox": bbox
+                "bbox": bbox,
+                "is_single_product": is_single_product
             }
         )
     
-    def search(self, query_vector: list, k: int = 5):
+    def search(self, query_vector: list, label: str, k: int = 5, single_product_only: bool = True):
         """Performs k-nearest-neighbors search
 
         Args:
             vector (list): embedding vector
             k (int, optional): k-nearest-search parameter. Defaults to 5.
         """
-        response = self.client.search(
-            index=self.index_name,
-            body={
-                "query": {
-                    "knn": {
-                        "field": "vector",
-                        "query_vector": query_vector,  # The input vector
-                        "k": k
-                    }
+        _must = []
+        if label is not None:
+            _must.append({
+                "term": {
+                    "category": label
                 }
-            }
-        )
+            })
+        
+        if single_product_only:
+            _must.append({
+            "term": {
+                "is_single_product": single_product_only
+            }})
+        
+        response = self.client.search(
+                    index=self.index_name,
+                    body={
+                        "query": {
+                            "knn": {
+                                "field": "vector",
+                                "query_vector": query_vector,
+                                "k": k,
+                                "filter": {
+                                    "bool": {
+                                        "must":_must
+                                    }
+                                }
+                            }
+                        }
+                    }
+                )
         return response["hits"]["hits"]

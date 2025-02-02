@@ -101,3 +101,13 @@ class EmbeddingModel:
             image_features = self.model.encode_image(images)
         
         return image_features
+    
+    def tokenize_text(self, text_list):
+        text = clip.tokenize(text_list).to(self.device)
+        return text
+    
+    def get_category_probs(self, image, text):
+        logits_per_image, logits_per_text = self.model(self.model_preprocess(image).unsqueeze(0).to(self.device), text)
+        probs = logits_per_image.softmax(dim=-1).cpu().detach().numpy()
+        
+        return probs
