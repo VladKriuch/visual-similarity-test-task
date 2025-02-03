@@ -5,6 +5,24 @@ from ultralytics import YOLO
 from copy import deepcopy
 import numpy as np
 from src.utils import *
+# Use a pipeline as a high-level helper
+from transformers import pipeline
+import easyocr
+
+class LogoDetectionModel:
+    def __init__(self, model_weights):
+        self.pipeline = pipeline("object-detection", model=model_weights)
+    
+    def detect_logos(self, image):
+        return self.pipeline(image)
+    
+class TextDetectionModel:
+    def __init__(self, languages=['en']):
+        self.reader = easyocr.Reader(['en'], gpu=True)
+        
+    def get_text(self, image):
+        return set([text[1] for text in self.reader.readtext(image) if text[2] > 0.5])
+
 
 class DetectionModel:
     def __init__(self, classification_dict={}, model_type="yolov8x-oiv7", force_cpu=False):
@@ -21,7 +39,7 @@ class DetectionModel:
         return classified_boxes
         
     def get_boxes(self, image):
-        results = self.model(image, conf=0.1, iou=0.5)
+        results = self.model(image, conf=0.2, iou=0.5)
         
         results_dict = {
             'labels': [],
@@ -106,6 +124,9 @@ class EmbeddingModel:
         text = clip.tokenize(text_list).to(self.device)
         return text
     
+    def get_text_embeddings(self, text_tokens):
+        return self.model.encode_text(text_tokens)
+        
     def get_category_probs(self, image, text):
         logits_per_image, logits_per_text = self.model(self.model_preprocess(image).unsqueeze(0).to(self.device), text)
         probs = logits_per_image.softmax(dim=-1).cpu().detach().numpy()

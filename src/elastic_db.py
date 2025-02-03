@@ -23,10 +23,25 @@ class ElasticDB:
             body={
                 "mappings": {
                     "properties": {
-                        "vector": {
+                        "image_vector": {
                             "type": "dense_vector",
                             "dims": 512,
                             "similarity": "cosine",
+                        },
+                        "text_vector": {
+                            "type": "dense_vector",
+                            "dims": 512,
+                            "similarity": "cosine"
+                        },
+                        "logo_vector": {
+                            "type": "dense_vector",
+                            "dims": 512,
+                            "similarity": "cosine"
+                        },
+                        "vector_combination": {
+                            "type": "dense_vector",
+                            "dims": 512,
+                            "similarity": "cosine"
                         },
                         "filepath": {
                             "type": "keyword",
@@ -45,22 +60,25 @@ class ElasticDB:
             }
         )
     
-    def insert_index(self, filepath: str, vector: list, category: str, bbox: str, is_single_product: bool):
+    def insert_index(self, **kwargs):
         """Inserts index
 
         Args:
             filepath (str): filepath to the image. Used for displaying image results
             vector (list): Vector generated from encoding model
-        """
-        self.client.index(
-            index=self.index_name,
-            body={
+            
+            {
                 "vector": vector,
                 "filepath": filepath,
                 "category": category,
                 "bbox": bbox,
                 "is_single_product": is_single_product
             }
+        """
+        _body = kwargs
+        self.client.index(
+            index=self.index_name,
+            body=_body
         )
     
     def search(self, query_vector: list, label: str, k: int = 5, single_product_only: bool = True):
@@ -78,9 +96,9 @@ class ElasticDB:
                 "Furniture": ["Furniture"],
                 "Food": ["Food"],
                 "Instruments": ["Instruments", "Electronics"],
-                "Clothing": ["Clothing", "Accessories", "Sports"],
+                "Clothing": ["Clothing", "Sports"],
                 "Sports": ["Sports", "Clothing"],
-                "Accessories": ["Clothing", "Accessories"],
+                "Accessories": ["Accessories"],
                 "Books": ["Books"],
                 "Electronics": ["Electronics", "Instruments"],
                 "Cosmetics": ["Cosmetics", "Food", "Accessories"],
@@ -103,7 +121,7 @@ class ElasticDB:
                     body={
                         "query": {
                             "knn": {
-                                "field": "vector",
+                                "field": "vector_combination",
                                 "query_vector": query_vector,
                                 "k": k,
                                 "filter": {
