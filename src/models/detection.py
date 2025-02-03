@@ -86,7 +86,7 @@ class DetectionModel:
         }
         
         for indx, label in enumerate(results['labels']):
-            for class_name, class_values in self.classification_dict.items():
+            for class_name, class_values in self.reclassification_dict.items():
                 if label in class_values:
                     updated_results['labels'].append(class_name)
                     updated_results['boxes'].append(results['boxes'][indx])

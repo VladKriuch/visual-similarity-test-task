@@ -21,8 +21,10 @@ def main():
     elastic_api_key = os.getenv('ELASTIC_API_KEY')
     
     elastic_db = ElasticDB(elastic_api_key)
-    elastic_db.create_index()
-    
+    try:
+        elastic_db.create_index()
+    except:
+        pass
     # Init logo det
     text_det = TextDetectionModel()
     
@@ -89,6 +91,7 @@ def main():
                     
                     # Trying avg
                     vector_combination =((np.array(vector_combination) + np.array(text_embedding_vector)) / 2).tolist()
+                
                 
                 elastic_db.insert_index(
                     filepath=filepath,

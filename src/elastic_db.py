@@ -113,7 +113,7 @@ class ElasticDB:
                query_vector: list, 
                label: str = None, 
                k: int = 5, 
-               single_product_only: bool = True,
+               single_product_only: bool = False,
                full_image_search: bool = True):
         """Multi-staged search system with filters
 
@@ -172,7 +172,7 @@ class ElasticDB:
                     body={
                         "query": {
                             "knn": {
-                                "field": "vector_combination",
+                                "field": "image_vector",
                                 "query_vector": query_vector,
                                 "k": k,
                                 "filter": {
