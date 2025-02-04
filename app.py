@@ -40,12 +40,27 @@ if __name__ == "__main__":
     # set some defaults
     CATEGORIES_FILE = "static/CATEGORIZATION.json"
     
-    if "pipeline_handler" not in st.session_state:
-        st.session_state.pipeline_handler = PipelineHandler(CATEGORIES_FILE)
-    
     # Set everything up
     st.title("Image Search App")
     
+    if "pipeline_handler" not in st.session_state:
+        st.session_state.pipeline_handler = PipelineHandler(CATEGORIES_FILE)
+    
+    if "category_filter" not in st.session_state:
+        with open(CATEGORIES_FILE, "r") as f:
+            categories = list(json.load(f).keys())
+        categories = ["Detect", "All"] + categories
+        st.session_state.filter_category = st.selectbox(
+            "Choose category or let the model detect it",
+            categories,
+        )
+    
+    st.session_state.full_images_search_only = st.radio(
+            "Include single product images only",
+            ["Yes", "No"],
+            key="full_im_only"
+        )
+        
     # Make utility for file upload
     uploaded_file = st.file_uploader("Upload an image", type=["png", "jpg", "jpeg"])
 
@@ -84,7 +99,10 @@ if __name__ == "__main__":
 
             if canvas_result.json_data is not None and canvas_result.json_data['objects']:
                 with st.spinner("Searching..."):
-                    results = pipeline_handler.perform_search()
+                    results = pipeline_handler.perform_search(
+                        st.session_state.filter_category,
+                        st.session_state.full_im_only == "Yes"
+                    )
                     if results is not None:
                         draw_search_results(results)
                     else:

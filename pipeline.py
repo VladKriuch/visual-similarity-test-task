@@ -6,7 +6,6 @@ import numpy as np
 
 from src.models.detection import DetectionModel
 from src.models.embedding import EmbeddingModel
-from src.models.ocr import TextDetectionModel
 from src.elastic_db import ElasticDB
 
 from dotenv import load_dotenv
@@ -22,7 +21,6 @@ class PipelineHandler:
             self.categories = json.load(f)
         self.detection_model = DetectionModel(reclassification_dict=self.categories)
         self.embedding_model = EmbeddingModel()
-        # self.text_detection_model = TextDetectionModel()
         
         self.category_tokenized = self.embedding_model.tokenize_text(list(self.categories.keys()))
         self.elastic_db = ElasticDB(os.getenv('ELASTIC_API_KEY'))
@@ -60,7 +58,7 @@ class PipelineHandler:
             y_center = (box[1] + box[3]) // 2
             self.centers.append((x_center, y_center))
 
-    def perform_search(self):
+    def perform_search(self, category_option: str, full_images_search: bool):
         is_self_drawn = True
         # Scale and crop
         object_data = self.json_data['objects'][-1]
@@ -87,31 +85,18 @@ class PipelineHandler:
             # Get image embedding
             vector_combination = self.embedding_model.embed_images_from_list([im_cropped]).cpu().tolist()
             
-            # Detect category
-            probs = self.embedding_model.get_category_probs(im_cropped, self.category_tokenized)
-            target_category = list(self.categories.keys())[np.argmax(probs)]
-            
-            # detected_text = self.text_detection_model.get_text(np.array(im_cropped))
-            
-            # if detected_text:
-            #     detected_text = ' '.join(detected_text)
-            #     try:
-            #         text_embedding_vector = self.embedding_model.embed_text_from_tokens(self.embedding_model.tokenize_text(
-            #                         f"{target_category}: {detected_text}"
-            #                     )).cpu().tolist()[0]
-            #     except RuntimeError:
-            #         text_embedding_vector = self.embedding_model.embed_text_from_tokens(self.embedding_model.tokenize_text(
-            #             f"{target_category}: {detected_text}"[:100]
-            #             )).cpu().tolist()[0]
-                        
-            #         # Trying avg
-            #         vector_combination =((np.array(vector_combination) + np.array(text_embedding_vector)) / 2).tolist()
-            
+            if category_option == "Detect":
+                # Detect category
+                probs = self.embedding_model.get_category_probs(im_cropped, self.category_tokenized)
+                target_category = list(self.categories.keys())[np.argmax(probs)]
+            else:
+                target_category = category_option
+                
             # Perform search
             search_results = self.elastic_db.search(
                 vector_combination[0],
                 label=target_category,
-                full_image_search=False
+                full_image_search=full_images_search
             )
             
             # Bring results to a suitable format
@@ -141,13 +126,16 @@ class PipelineHandler:
             vector_combination = self.embedding_model.embed_images_from_list([im_cropped]).cpu().tolist()
             
             # Detect category
-            target_category = self.detected_regions['labels'][i]
-            
+            if category_option == "Detect":
+                target_category = self.detected_regions['labels'][i]
+            else:
+                target_category = category_option
+                
             # Perform search
             search_results = self.elastic_db.search(
                 vector_combination[0],
                 label=target_category,
-                full_image_search=False
+                full_image_search=full_images_search
             )
             
             # Bring results to a suitable format

@@ -131,7 +131,7 @@ class ElasticDB:
         _must = []
         
         # Include labels into filters
-        if label is not None:
+        if label is not None and label != "All":
             # Some of the labels may overlap, thus there's a bit of hardcoded mapping involved 
             labels_mapper = {
                 "Musical instruments": ["Musical instruments"],
