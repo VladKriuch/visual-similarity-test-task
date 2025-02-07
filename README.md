@@ -1,5 +1,8 @@
 # Visual Product Search
 
+## Little Demo
+![Demo](demo.gif)
+
 ## Setup
 
 1. Define `DATA` variable in `.env` file in project root (There's an example for this in .env.example file)
