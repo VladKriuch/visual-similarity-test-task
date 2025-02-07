@@ -44,8 +44,8 @@ class EmbeddingModel:
     
         with torch.no_grad():
             image_features = self.model.encode_image(images)
-        
-        return image_features
+            
+        return image_features / image_features.norm(dim=-1, keepdim=True)
     
     def tokenize_text(self, text_list):
         """Tokenizer for predicting text embeddings"""
@@ -54,7 +54,9 @@ class EmbeddingModel:
     
     def embed_text_from_tokens(self, text_tokens):
         """Embeds text from token"""
-        return self.model.encode_text(text_tokens)
+        with torch.no_grad():
+            text_features = self.model.encode_text(text_tokens)
+        return text_features / text_features.norm(dim=-1, keepdim=True)
         
     def get_category_probs(self, image, text):
         """Function to generate probability of text correspondencies to the image"""

@@ -1,5 +1,7 @@
 import os
 
+from dotenv import load_dotenv
+
 from elasticsearch import Elasticsearch
 
 class ElasticDB:
@@ -11,16 +13,18 @@ class ElasticDB:
         "vector_combination": lambda vector: isinstance(vector, list)
     }
     
-    def __init__(self, elastic_uri="http://localhost:9200", index_name="visual-search"):
+    def __init__(self, elastic_uri="http://elasticsearch:9200", index_name="visual-search"):
         """Init
 
         Args:
             elastic_uri (str, optional): Address to elastic db. Defaults to "http://localhost:9200".
             index_name (str, optional): Main index name. Defaults to "visual-search".
         """
+        load_dotenv()
+        if os.getenv("ELASTIC-URI"):
+            elastic_uri = os.getenv("ELASTIC-URI")
         self.client = Elasticsearch(
             elastic_uri,
-            api_key="SjdRbXdwUUJIMExPUlN4eThLZGg6OThoYmhWQWJTbjZMR2MtbThIMmtlZw=="
         )
         self.index_name = index_name
         

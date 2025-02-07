@@ -11,7 +11,7 @@ class DetectionModel:
     noisy info. Hopefully, it'll help by providing more accurate results
     """
     def __init__(self, 
-                 model_type = "E:\Projects\\visual-similarity-test-task\static\yolov8x-oiv7.pt", 
+                 model_type = "yolov8x-oiv7.pt", 
                  force_cpu = False, 
                  reclassification_dict = {},
                  conf=0.2,

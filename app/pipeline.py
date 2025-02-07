@@ -1,5 +1,4 @@
 import json
-import os
 import ast
 
 import numpy as np
@@ -7,7 +6,6 @@ import numpy as np
 from src.models.detection import DetectionModel
 from src.models.embedding import EmbeddingModel
 from src.elastic_db import ElasticDB
-from src.models.ocr import TextDetectionModel
 
 from dotenv import load_dotenv
 
@@ -22,10 +20,9 @@ class PipelineHandler:
             self.categories = json.load(f)
         self.detection_model = DetectionModel(reclassification_dict=self.categories)
         self.embedding_model = EmbeddingModel()
-        self.ocr_model = TextDetectionModel()
         
         self.category_tokenized = self.embedding_model.tokenize_text(list(self.categories.keys()))
-        self.elastic_db = ElasticDB(index_name="visual-search-test")
+        self.elastic_db = ElasticDB()
         
         self.state_reset()
     
@@ -94,23 +91,9 @@ class PipelineHandler:
             else:
                 target_category = category_option
             
-            detected_text = self.ocr_model.get_text(np.array(im_cropped))
-            if detected_text:
-                try:
-                    text_embedding_vector = self.embedding_model.embed_text_from_tokens(self.embedding_model.tokenize_text(
-                                    f"{target_category}: {detected_text}"
-                                )).cpu()[0].detach().numpy()
-                except RuntimeError:
-                    text_embedding_vector = self.embedding_model.embed_text_from_tokens(self.embedding_model.tokenize_text(
-                                    f"{target_category}: {detected_text}"[:100]
-                                )).cpu()[0].detach().numpy()
-
-                vector_combination = np.concatenate((image_vector.detach().numpy(), text_embedding_vector))
-            else:
-                vector_combination = image_vector
             # Perform search
             search_results = self.elastic_db.search(
-                vector_combination.tolist(),
+                image_vector.tolist(),
                 label=target_category,
                 full_image_search=full_images_search
             )
@@ -147,24 +130,9 @@ class PipelineHandler:
             else:
                 target_category = category_option
             
-            detected_text = self.ocr_model.get_text(np.array(im_cropped))
-            if detected_text:
-                try:
-                    text_embedding_vector = self.embedding_model.embed_text_from_tokens(self.embedding_model.tokenize_text(
-                                    f"{target_category}: {detected_text}"
-                                )).cpu()[0].detach().numpy()
-                except RuntimeError:
-                    text_embedding_vector = self.embedding_model.embed_text_from_tokens(self.embedding_model.tokenize_text(
-                                    f"{target_category}: {detected_text}"[:100]
-                                )).cpu()[0].detach().numpy()
-
-                vector_combination = np.concatenate((image_vector.detach().numpy(), text_embedding_vector))
-            else:
-                vector_combination = image_vector
-            
             # Perform search
             search_results = self.elastic_db.search(
-                vector_combination.tolist(),
+                image_vector.tolist(),
                 label=target_category,
                 full_image_search=full_images_search
             )

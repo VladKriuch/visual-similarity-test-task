@@ -3,11 +3,9 @@ import os
 import json
 
 import streamlit as st
-import numpy as np
 
 from PIL import Image, ImageDraw
 from dotenv import load_dotenv
-from streamlit_image_coordinates import streamlit_image_coordinates
 from streamlit_drawable_canvas import st_canvas
 
 from pipeline import PipelineHandler
@@ -39,7 +37,7 @@ def draw_search_results(search_results):
 if __name__ == "__main__":
     # set some defaults
     load_dotenv()
-    CATEGORIES_FOLDER = os.getenv('STATIC-FOLDER')
+    CATEGORIES_FOLDER = "./static"
     
     # Set everything up
     st.title("Image Search App")
@@ -81,7 +79,7 @@ if __name__ == "__main__":
         draw = ImageDraw.Draw(image)
         for x_center, y_center in pipeline_handler.centers:
             draw.ellipse((x_center - 7, y_center - 7, x_center + 7, y_center + 7), fill='red')
-            
+        
         # Create canvas (ONLY rectangle mode)
         canvas_result = st_canvas(
                 fill_color="rgba(255, 0, 0, 0.3)",  # Transparent red fill

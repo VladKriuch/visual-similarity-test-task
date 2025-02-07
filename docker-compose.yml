@@ -1,0 +1,38 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.1
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  app:
+    build: ./app
+    container_name: app
+    environment:
+      - DATA-PATH=/data
+      - ELASTIC-URI=http://elasticsearch:9200
+      - YOLO-VERBOSE=false
+    volumes:
+      - ${DATA}:/data
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "8501:8501"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]

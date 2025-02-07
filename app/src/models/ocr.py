@@ -13,7 +13,7 @@ class TextDetectionModel:
             force_cpu (bool, optional): Defaults to False. Whether to force cpu inference
             conf_level(float, optional): Defaults to 0.5. Confidence level to filter results by 
         """
-        self.reader = easyocr.Reader(languages, gpu=not force_cpu)
+        self.reader = easyocr.Reader(languages, gpu=True)
         self.conf_level = conf_level
         
     def get_text(self, image) -> set[str]:
