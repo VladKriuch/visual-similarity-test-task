@@ -24,8 +24,10 @@ Each image is processed with 4 steps
 1. **Object Detection**: The pipeline utilizes YOLO trained on the Open Images V7 dataset to detect products in an image. Custom reclassifying is done afterwards in order to narrow down the possible classes. Thus, different rois proposed for different objects in images. It increases the amount of vectors in dataset from 8k (amount of images) to ~30k
 
 1.5 **Additional post processing** - Some of YOLO classes overlap over each other, thus, additional non-max suppression is done after category generalization. Also, for shoes, there's algorithm to combine close 2 shoes into pair. However, that it is not successfull in every case.
+
 2. **Generating Embeddings**: Generates embeddings using OpenAI's CLIP model to compare images/text and find visually similar products. CLIP performs very well in this task. For general images(not detected by YOLO), CLIP is also used to obtain the category for the image.
 The embeddings are generated for each image and each roi in the image. 
+
 3. **Elasticsearch**: Stores embeddings in the image_vector fields - `image_vector`.
 
 ### Input image pipeline
