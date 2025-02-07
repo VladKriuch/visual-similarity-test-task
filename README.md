@@ -2,7 +2,7 @@
 
 ## Setup
 
-1. Define `DATA` variable in `.env` file in project root (There's an example for this in .env file)
+1. Define `DATA` variable in `.env` file in project root (There's an example for this in .env.example file)
 2. To set up and run the project, use Docker from project root dir:
 
 ```sh
